@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daily Return · Soul Growth Circle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment:    #F5F0E8;
+  --parchment-dk: #EDE6D6;
+  --ink:          #2C2416;
+  --ink-mid:      #5C4F3A;
+  --ink-soft:     #8C7E6A;
+  --ink-faint:    #BFB49E;
+  --gold:         #C9A84C;
+  --gold-light:   #E8C870;
+  --gold-pale:    #F5E8B8;
+  --gold-deep:    #A07830;
+  --sage:         #4a7a60;
+  --forest:       #2D4A3E;
+  --navy:         #2A3550;
+  --border:       rgba(139,104,64,0.18);
+  --border-gold:  rgba(201,168,76,0.35);
+  --shadow:       rgba(44,36,22,0.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body {
+  min-height: 100vh;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background 1s ease, color 0.5s ease;
+}
+
+body.morning {
+  background: linear-gradient(160deg, #F5F0E8 0%, #EDE6D6 50%, #E8DCC8 100%);
+  color: var(--ink);
+}
+body.evening {
+  background: linear-gradient(160deg, #1E2A3E 0%, #2A3550 50%, #1a2238 100%);
+  color: rgba(245,240,232,0.9);
+}
+
+/* paper texture */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:0;
+}
+
+/* LANTERN ANIMATIONS */
+@keyframes flicker {
+  0%,100%{transform:scaleX(1) scaleY(1);}
+  25%{transform:scaleX(.93) scaleY(1.06);}
+  50%{transform:scaleX(1.05) scaleY(.95);}
+  75%{transform:scaleX(.97) scaleY(1.04);}
+}
+@keyframes glowPulse { 0%,100%{opacity:.5;}50%{opacity:1;} }
+@keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);} }
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes shimmer {
+  0%{opacity:0.6;} 50%{opacity:1;} 100%{opacity:0.6;}
+}
+
+.flame-body { transform-origin: center bottom; animation: flicker 2.1s ease-in-out infinite; }
+.lantern-glow { animation: glowPulse 2.4s ease-in-out infinite; }
+.lantern-wrap { animation: float 6s ease-in-out infinite; }
+
+/* LAYOUT */
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 28px 80px;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* HEADER */
+.site-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 6px;
+  text-align: center;
+  transition: color 0.5s;
+}
+body.morning .site-eyebrow { color: var(--ink-soft); }
+body.evening .site-eyebrow { color: rgba(201,168,76,0.55); }
+
+.lantern-wrap {
+  margin: 16px auto;
+  display: block;
+  width: 80px;
+}
+
+.site-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 400;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  transition: color 0.5s;
+}
+body.morning .site-title { color: var(--ink); }
+body.evening .site-title { color: rgba(245,240,232,0.95); }
+.site-title em { font-style: normal; color: var(--gold-deep); }
+
+.site-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 8px;
+  transition: color 0.5s;
+}
+body.morning .site-sub { color: var(--ink-soft); }
+body.evening .site-sub { color: rgba(245,240,232,0.5); }
+
+/* TIME TOGGLE */
+.time-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 24px 0 36px;
+  border: 1px solid var(--border-gold);
+}
+.toggle-btn {
+  padding: 9px 24px;
+  font-family: 'Jost', sans-serif;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.toggle-btn.morning-btn {
+  background: var(--parchment-dk);
+  color: var(--ink-soft);
+}
+.toggle-btn.morning-btn.active {
+  background: var(--gold);
+  color: white;
+}
+.toggle-btn.evening-btn {
+  background: rgba(42,53,80,0.3);
+  color: rgba(245,240,232,0.5);
+}
+.toggle-btn.evening-btn.active {
+  background: var(--navy);
+  color: var(--gold-light);
+}
+
+/* CARD */
+.card {
+  width: 100%;
+  border-radius: 20px;
+  padding: 36px 32px;
+  margin-bottom: 24px;
+  text-align: center;
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+body.morning .card {
+  background: white;
+  border: 1px solid var(--border-gold);
+  box-shadow: 0 4px 32px rgba(44,36,22,0.1);
+}
+body.evening .card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(201,168,76,0.25);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+}
+
+.card-label {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+body.morning .card-label { color: var(--gold-deep); }
+body.evening .card-label { color: rgba(201,168,76,0.6); }
+
+.card-label::before, .card-label::after {
+  content: '';
+  flex: 1;
+  max-width: 60px;
+  height: 1px;
+  background: var(--border-gold);
+}
+
+.card-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 2.8vw, 28px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  animation: fadeUp 0.6s ease forwards;
+  transition: color 0.5s;
+}
+body.morning .card-text { color: var(--ink); }
+body.evening .card-text { color: rgba(245,240,232,0.92); }
+
+.card-pillar {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 400;
+  margin-top: 16px;
+  transition: color 0.5s;
+}
+body.morning .card-pillar { color: var(--ink-faint); }
+body.evening .card-pillar { color: rgba(201,168,76,0.4); }
+
+/* GENERATE BUTTON */
+.generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 40px;
+  border-radius: 999px;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 320px;
+}
+body.morning .generate-btn {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+  color: white;
+  box-shadow: 0 4px 18px rgba(160,120,48,0.3);
+}
+body.morning .generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(160,120,48,0.4);
+}
+body.evening .generate-btn {
+  background: linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.1) 100%);
+  color: var(--gold-light);
+  border: 1px solid rgba(201,168,76,0.4);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+}
+body.evening .generate-btn:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.35) 0%, rgba(201,168,76,0.2) 100%);
+  transform: translateY(-2px);
+}
+
+/* DIVIDER */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+  margin: 8px 0 24px;
+}
+
+/* FOOTER */
+.footer-note {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  margin-top: 8px;
+  transition: color 0.5s;
+}
+body.morning .footer-note { color: var(--ink-faint); }
+body.evening .footer-note { color: rgba(245,240,232,0.3); }
+
+.sgc-link {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 9px 22px;
+  border-radius: 999px;
+  font-family: 'Jost', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid var(--border-gold);
+}
+body.morning .sgc-link { color: var(--gold-deep); background: var(--gold-pale); }
+body.morning .sgc-link:hover { background: var(--gold); color: white; }
+body.evening .sgc-link { color: var(--gold-light); background: rgba(201,168,76,0.1); }
+body.evening .sgc-link:hover { background: rgba(201,168,76,0.2); }
+
+@media(max-width:500px){
+  .container { padding: 32px 18px 60px; }
+  .card { padding: 28px 22px; }
+}
+
+/* RETURN RINGS */
+.lantern-wrap { position: relative; }
+.ring-svg {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 116px;
+  height: 116px;
+  pointer-events: none;
+  z-index: -1;
+}
+.ring-bg { fill: none; stroke-width: 2.5; transition: stroke 0.5s; }
+body.morning .ring-bg { stroke: rgba(139,104,64,0.14); }
+body.evening .ring-bg { stroke: rgba(201,168,76,0.12); }
+.ring-fill {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+/* LANTERN LIT STATE */
+.flame-body.dim { opacity: 0.4; filter: saturate(0.55); }
+.lantern-glow.dim { opacity: 0.25; }
+.lit-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  text-align: center;
+  height: 18px;
+  margin-bottom: 4px;
+  transition: color 0.5s, opacity 0.4s;
+}
+body.morning .lit-label { color: var(--gold-deep); }
+body.evening .lit-label { color: var(--gold-light); }
+
+/* KEEP THIS ONE */
+.keep-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  border-radius: 999px;
+  padding: 7px 18px;
+  font-family: 'Jost', sans-serif;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.25s ease;
+}
+body.morning .keep-btn { color: var(--gold-deep); border: 1px solid var(--border-gold); }
+body.morning .keep-btn:hover { background: var(--gold-pale); }
+body.morning .keep-btn.kept { background: var(--gold-pale); }
+body.evening .keep-btn { color: var(--gold-light); border: 1px solid rgba(201,168,76,0.4); }
+body.evening .keep-btn:hover { background: rgba(201,168,76,0.12); }
+body.evening .keep-btn.kept { background: rgba(201,168,76,0.15); }
+
+/* COLLECTED WORDS */
+.collected-toggle {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: color 0.3s;
+}
+body.morning .collected-toggle { color: var(--ink-soft); }
+body.evening .collected-toggle { color: rgba(245,240,232,0.45); }
+
+.collected-panel {
+  width: 100%;
+  max-width: 320px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  text-align: left;
+}
+.collected-panel.open { max-height: 400px; overflow-y: auto; margin-top: 14px; }
+.collected-item {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-gold);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+body.morning .collected-item { color: var(--ink-mid); }
+body.evening .collected-item { color: rgba(245,240,232,0.8); }
+.collected-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  flex-shrink: 0;
+  opacity: 0.5;
+  font-family: 'Jost', sans-serif;
+}
+.collected-remove:hover { opacity: 1; }
+.collected-empty {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  opacity: 0.5;
+  padding: 10px 0;
+}
+</style>
+</head>
+<body class="morning">
+
+<div class="container">
+
+  <div class="site-eyebrow">Soul Growth Circle · Daily Practice</div>
+
+  <div class="lantern-wrap">
+    <svg class="ring-svg" viewBox="0 0 116 116">
+      <circle class="ring-bg" cx="58" cy="58" r="50"/>
+      <circle class="ring-fill" id="ringFill" cx="58" cy="58" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16" transform="rotate(-90 58 58)"/>
+    </svg>
+    <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" width="80">
+      <line x1="60" y1="0" x2="60" y2="18" stroke="#C9A84C" stroke-width="1.5" opacity="0.7"/>
+      <circle cx="60" cy="20" r="3" fill="none" stroke="#C9A84C" stroke-width="1.5" opacity="0.7"/>
+      <path d="M40 28 Q60 18 80 28 L76 38 Q60 30 44 38 Z" fill="#8B7340" opacity="0.9"/>
+      <path d="M44 38 L76 38 L74 42 L46 42 Z" fill="#A08840" opacity="0.8"/>
+      <rect x="38" y="42" width="44" height="90" rx="3" fill="rgba(8,16,30,0.85)" stroke="#C9A84C" stroke-width="1.2" opacity="0.9"/>
+      <rect x="40" y="44" width="40" height="86" rx="2" fill="rgba(245,230,180,0.06)"/>
+      <line x1="60" y1="42" x2="60" y2="132" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      <line x1="49" y1="42" x2="49" y2="132" stroke="#C9A84C" stroke-width="0.5" opacity="0.28"/>
+      <line x1="71" y1="42" x2="71" y2="132" stroke="#C9A84C" stroke-width="0.5" opacity="0.28"/>
+      <line x1="38" y1="87" x2="82" y2="87" stroke="#C9A84C" stroke-width="0.8" opacity="0.38"/>
+      <ellipse class="lantern-glow" id="lanternGlow" cx="60" cy="92" rx="13" ry="16" fill="rgba(255,100,10,0.2)"/>
+      <g class="flame-body" id="flameBody">
+        <path d="M60 110 C52 106 50 98 53 90 C55 84 58 82 60 76 C62 82 65 84 67 90 C70 98 68 106 60 110Z" fill="url(#fg1)"/>
+        <path d="M60 108 C55 104 54 98 56 92 C57.5 87 59 85 60 81 C61 85 62.5 87 64 92 C66 98 65 104 60 108Z" fill="url(#fg2)"/>
+        <ellipse cx="60" cy="101" rx="3.5" ry="5" fill="rgba(255,240,200,0.92)"/>
+      </g>
+      <rect x="56" y="110" width="8" height="9" rx="1" fill="#D4B896" opacity="0.8"/>
+      <path d="M36 132 L84 132 L88 140 L32 140 Z" fill="#8B7340" opacity="0.8"/>
+      <rect x="30" y="140" width="60" height="6" rx="2" fill="#A08840" opacity="0.7"/>
+      <defs>
+        <linearGradient id="fg1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFF5C0"/>
+          <stop offset="30%" stop-color="#FF8C00" stop-opacity=".95"/>
+          <stop offset="65%" stop-color="#E84000" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="#8B1A00" stop-opacity=".8"/>
+        </linearGradient>
+        <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="white"/>
+          <stop offset="40%" stop-color="#FFD040" stop-opacity=".95"/>
+          <stop offset="80%" stop-color="#FF6010" stop-opacity=".8"/>
+          <stop offset="100%" stop-color="#CC3000" stop-opacity=".5"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="lit-label" id="litLabel"></div>
+
+  <h1 class="site-title" id="mainTitle">Your Morning <em>Intention</em></h1>
+  <p class="site-sub" id="mainSub">A practice to carry into your day</p>
+
+  <div class="time-toggle">
+    <button class="toggle-btn morning-btn active" onclick="setMode('morning')">🌅 Morning</button>
+    <button class="toggle-btn evening-btn" onclick="setMode('evening')">🌙 Evening</button>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="card-label" id="cardLabel">Today's Intention</div>
+    <div class="card-text" id="cardText">Take a breath. Your intention is on its way.</div>
+    <div class="card-pillar" id="cardPillar"></div>
+    <button class="keep-btn" id="keepBtn" onclick="keepCurrent()">Keep this one</button>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generate()">
+    <span id="btnIcon">✦</span>
+    <span id="btnText">Receive Your Intention</span>
+  </button>
+
+  <div class="divider"></div>
+
+  <button class="collected-toggle" id="collectedToggle" onclick="toggleCollected()">Collected words (<span id="collectedCount">0</span>)</button>
+  <div class="collected-panel" id="collectedPanel"></div>
+
+  <p class="footer-note">Return here morning and evening.<br/>The practice is the returning. 🕯️</p>
+
+  <a class="sgc-link" href="https://www.skool.com/bodydialoguemethod/about" target="_blank" rel="noopener">
+    Return to Soul Growth Circle
+  </a>
+
+</div>
+
+<script>
+const morningIntentions = [
+  { text: "Today I am not here to accomplish. I am here to notice.", pillar: "Non-Striving" },
+  { text: "This morning I give myself permission to arrive before I begin.", pillar: "Non-Striving" },
+  { text: "Nothing is required to happen today except that I show up.", pillar: "Non-Striving" },
+  { text: "I release the pressure to make something happen and trust what unfolds.", pillar: "Non-Striving" },
+  { text: "Today I move at the pace my body can integrate.", pillar: "Non-Striving" },
+  { text: "My body knows what it needs. Today I practice listening.", pillar: "Trust" },
+  { text: "I remain in choice today. Nothing is happening to me. I am moving through it.", pillar: "Trust" },
+  { text: "Today I trust that what is unfolding is doing so in my timing.", pillar: "Trust" },
+  { text: "I don't have to figure it out today. I just have to stay present.", pillar: "Trust" },
+  { text: "My inner wisdom is available to me. I don't have to chase it.", pillar: "Trust" },
+  { text: "Change is happening underneath what I can see. I trust the process.", pillar: "Patience" },
+  { text: "Today I practice staying rather than leaving before it gets real.", pillar: "Patience" },
+  { text: "I am not behind. I am exactly where the work is.", pillar: "Patience" },
+  { text: "Lasting change doesn't come from intensity. It comes from returning. Again. And again.", pillar: "Patience" },
+  { text: "Today I give the process the time it actually needs.", pillar: "Patience" },
+  { text: "Today I don't need answers. I need curiosity.", pillar: "Beginner's Mind" },
+  { text: "I arrive this morning without needing to already know.", pillar: "Beginner's Mind" },
+  { text: "What if today showed me something I didn't expect?", pillar: "Beginner's Mind" },
+  { text: "I release the need to be further along than I am.", pillar: "Beginner's Mind" },
+  { text: "Today I practice not knowing as a form of openness.", pillar: "Beginner's Mind" },
+  { text: "Whatever arises today is information. Not a verdict.", pillar: "Non-Judgment" },
+  { text: "Today I notice without deciding what it means.", pillar: "Non-Judgment" },
+  { text: "Activation is not failure. It is my system communicating.", pillar: "Non-Judgment" },
+  { text: "I practice meeting my experience without labeling it good or bad.", pillar: "Non-Judgment" },
+  { text: "Today I soften the inner critic and listen instead.", pillar: "Non-Judgment" },
+  { text: "What is present this morning is allowed to be present.", pillar: "Acceptance" },
+  { text: "Today I meet myself exactly where I am. Not where I think I should be.", pillar: "Acceptance" },
+  { text: "Acceptance is not approval. It is honest contact. I practice that today.", pillar: "Acceptance" },
+  { text: "I don't have to change my experience before I've fully met it.", pillar: "Acceptance" },
+  { text: "I practice accurate contact with what is — not what I wish were true.", pillar: "Acceptance" },
+  { text: "Today I hold my attention like a lantern. Steady. Without chasing.", pillar: "Letting Be" },
+  { text: "I illuminate without pursuing. I notice without interrogating.", pillar: "Letting Be" },
+  { text: "Nothing needs to emerge today. Nothing needs to resolve.", pillar: "Letting Be" },
+  { text: "I practice being present without needing to fix what I find.", pillar: "Letting Be" },
+  { text: "Today I offer myself the same steady attention I would offer someone I love.", pillar: "Letting Be" },
+  { text: "What I release today creates space for what is trying to arrive.", pillar: "Letting Go" },
+  { text: "Today I notice what I'm gripping and practice opening my hands.", pillar: "Letting Go" },
+  { text: "Letting go is not giving up. It is making room.", pillar: "Letting Go" },
+  { text: "I release the version of today that hasn't happened yet and arrive in the one that has.", pillar: "Letting Go" },
+  { text: "I practice putting down what I've been carrying that was never mine to carry.", pillar: "Letting Go" },
+  { text: "Today I carry this question lightly: Where does calm reside within me?", pillar: "Reflective Practice" },
+  { text: "What does my body need this morning that my mind hasn't asked it yet?", pillar: "Reflective Practice" },
+  { text: "What is already here before the day starts?", pillar: "Reflective Practice" },
+  { text: "What would it feel like to move through today from stillness instead of urgency?", pillar: "Reflective Practice" },
+  { text: "This morning I ask: What is steady in me right now?", pillar: "Reflective Practice" },
+  { text: "Today the journey begins within. Not out there. In here.", pillar: "The Return" },
+  { text: "I return to myself this morning before I give myself to anything else.", pillar: "The Return" },
+  { text: "Today I practice getting beneath the busyness of my mind.", pillar: "The Return" },
+  { text: "The return itself is the change. I begin by returning.", pillar: "The Return" },
+  { text: "Today I am not managing. I am translating.", pillar: "The Return" },
+  { text: "I don't have to earn stillness today. It is already mine to return to.", pillar: "Non-Striving" },
+  { text: "Nothing about today requires my hustle to be worthy.", pillar: "Non-Striving" },
+  { text: "Today is not a task. It is a place to arrive.", pillar: "Non-Striving" },
+  { text: "I don't need to control today to feel safe inside it.", pillar: "Trust" },
+  { text: "My nervous system already knows how to come home. I let it lead today.", pillar: "Trust" },
+  { text: "I trust the pace my body sets, even when my mind wants to rush ahead.", pillar: "Trust" },
+  { text: "Today I let the practice be small. Small is still real.", pillar: "Patience" },
+  { text: "I am expanding capacity, not chasing a finish line.", pillar: "Patience" },
+  { text: "What I am growing today doesn't show up all at once. That's alright.", pillar: "Patience" },
+  { text: "I meet today without a script for how it should go.", pillar: "Beginner's Mind" },
+  { text: "Today I let myself be new at this, even after all this time.", pillar: "Beginner's Mind" },
+  { text: "I don't need the whole path today. Just the next honest step.", pillar: "Beginner's Mind" },
+  { text: "Today my reactions are data, not a report card.", pillar: "Non-Judgment" },
+  { text: "I can feel something today without deciding it means I'm doing this wrong.", pillar: "Non-Judgment" },
+  { text: "My body's signals today are information I'm learning to read, not evidence against me.", pillar: "Non-Judgment" },
+  { text: "I don't have to like today for it to be allowed.", pillar: "Acceptance" },
+  { text: "Today I stop negotiating with what already is.", pillar: "Acceptance" },
+  { text: "I meet this moment as it actually is, not as I planned for it to be.", pillar: "Acceptance" },
+  { text: "I hold today loosely. Open hands, not tight fists.", pillar: "Letting Be" },
+  { text: "I don't have to interrogate every feeling that shows up today.", pillar: "Letting Be" },
+  { text: "Today I let things be unfinished without needing to resolve them.", pillar: "Letting Be" },
+  { text: "What I've been gripping since yesterday, I set down this morning.", pillar: "Letting Go" },
+  { text: "I don't have to carry today what belonged to yesterday.", pillar: "Letting Go" },
+  { text: "I release the story I've been telling myself and meet what's actually here.", pillar: "Letting Go" },
+  { text: "This morning I ask: what am I ready to notice today?", pillar: "Reflective Practice" },
+  { text: "What does returning to myself look like in the next hour?", pillar: "Reflective Practice" },
+  { text: "Where in my body is today already asking to be felt?", pillar: "Reflective Practice" },
+  { text: "I don't need anywhere else to go this morning. I'm already here.", pillar: "The Return" },
+  { text: "Coming back to myself is the whole practice today. Nothing more is required.", pillar: "The Return" },
+  { text: "This morning, before the day takes me anywhere, I return.", pillar: "The Return" },
+];
+
+const eveningReflections = [
+  { text: "Where did I feel most present in my body today?", pillar: "Body" },
+  { text: "What did my body carry today that I can put down now?", pillar: "Body" },
+  { text: "Where was there ease in my body today, even briefly?", pillar: "Body" },
+  { text: "What sensation is asking for my attention right now?", pillar: "Body" },
+  { text: "Where did I feel steady today, even for a moment?", pillar: "Body" },
+  { text: "What is my body's truth at the end of this day?", pillar: "Body" },
+  { text: "Where did I hold tension today that I can consciously release now?", pillar: "Body" },
+  { text: "What does my body need before sleep tonight?", pillar: "Body" },
+  { text: "Where did I return to myself today, even once?", pillar: "The Return" },
+  { text: "Was there a moment today when I caught myself leaving and came back?", pillar: "The Return" },
+  { text: "What was the moment before I left today? Can I name it now?", pillar: "The Return" },
+  { text: "Where did I feel the pull to distract myself today? What was underneath it?", pillar: "The Return" },
+  { text: "Did I give myself permission to stop today? If not, what stopped me?", pillar: "The Return" },
+  { text: "Where did the busyness of my mind take me today that I didn't choose to go?", pillar: "The Return" },
+  { text: "What moved in me today that I want to honor before sleep?", pillar: "Soul" },
+  { text: "What is still speaking underneath the events of today?", pillar: "Soul" },
+  { text: "What question arrived today that I haven't answered yet?", pillar: "Soul" },
+  { text: "What did today ask of me that I wasn't expecting?", pillar: "Soul" },
+  { text: "What is asking to be heard before I rest?", pillar: "Soul" },
+  { text: "What shifted in me today, even quietly, even a little?", pillar: "Soul" },
+  { text: "What am I grateful my body carried today?", pillar: "Soul" },
+  { text: "What can I put down before tomorrow?", pillar: "Letting Go" },
+  { text: "What from today is complete enough to release?", pillar: "Letting Go" },
+  { text: "What do I want to leave at the door tonight?", pillar: "Letting Go" },
+  { text: "What story about today am I ready to let be what it was?", pillar: "Letting Go" },
+  { text: "What is asking to settle before sleep?", pillar: "Letting Go" },
+  { text: "Is there something I need to forgive myself for today? Can I begin that now?", pillar: "Letting Go" },
+  { text: "What would it feel like to let today be enough?", pillar: "Letting Go" },
+  { text: "What do I want to carry into sleep with me tonight?", pillar: "Closing" },
+  { text: "If today had a lesson, what was it?", pillar: "Closing" },
+  { text: "What is one thing today showed me about myself?", pillar: "Closing" },
+  { text: "What is the quietest truth of this day?", pillar: "Closing" },
+  { text: "What is still here when everything else falls away?", pillar: "Closing" },
+  { text: "Where did I trust myself today — even quietly?", pillar: "Self-Trust" },
+  { text: "What did my soul need today that it may or may not have gotten?", pillar: "Self-Trust" },
+  { text: "How many times did I return to myself today? Even once counts.", pillar: "Self-Trust" },
+  { text: "What is different in me right now compared to this morning?", pillar: "Self-Trust" },
+  { text: "What do I want to bring into rest with me?", pillar: "Rest" },
+  { text: "What can I put down before tomorrow begins?", pillar: "Rest" },
+  { text: "What moved or shifted — even quietly — today?", pillar: "Rest" },
+  { text: "What is my body telling me now that the day has quieted?", pillar: "Body" },
+  { text: "Where did my breath change today, and what was happening then?", pillar: "Body" },
+  { text: "What part of me is still bracing that can soften now?", pillar: "Body" },
+  { text: "How many times did I leave myself today, and how many times did I come back?", pillar: "The Return" },
+  { text: "What pulled me away from myself today, and is it still pulling?", pillar: "The Return" },
+  { text: "Where in today did I forget I had a body, and where did I remember?", pillar: "The Return" },
+  { text: "What did today reveal about what I actually need, not just what I want?", pillar: "Soul" },
+  { text: "What is quietly true tonight that wasn't this morning?", pillar: "Soul" },
+  { text: "What part of today do I want to remember when I'm older?", pillar: "Soul" },
+  { text: "What am I still holding onto from today that has already finished?", pillar: "Letting Go" },
+  { text: "What would tonight feel like if I stopped defending today's choices?", pillar: "Letting Go" },
+  { text: "What's ready to be released, even if I'm not ready to understand it yet?", pillar: "Letting Go" },
+  { text: "What is the truest sentence I could write about today?", pillar: "Closing" },
+  { text: "If today closed a door, what door opened instead?", pillar: "Closing" },
+  { text: "What do I know now that I didn't know this morning?", pillar: "Closing" },
+  { text: "Where did I choose myself today, even in a small way?", pillar: "Self-Trust" },
+  { text: "What decision today came from my body instead of my fear?", pillar: "Self-Trust" },
+  { text: "Where did I override an old pattern today, even briefly?", pillar: "Self-Trust" },
+  { text: "What does my body actually need from tonight, not just from sleep?", pillar: "Rest" },
+  { text: "What can wait until morning that I've been carrying since noon?", pillar: "Rest" },
+  { text: "What would it mean to let tonight be enough, exactly as it was?", pillar: "Rest" },
+];
+
+let mode = 'morning';
+let lastMorningIdx = -1;
+let lastEveningIdx = -1;
+
+function detectTime() {
+  const hour = new Date().getHours();
+  return hour >= 17 || hour < 5 ? 'evening' : 'morning';
+}
+
+function setMode(m) {
+  mode = m;
+  document.body.className = m;
+
+  const morningBtn = document.querySelector('.morning-btn');
+  const eveningBtn = document.querySelector('.evening-btn');
+  morningBtn.classList.toggle('active', m === 'morning');
+  eveningBtn.classList.toggle('active', m === 'evening');
+
+  const title = document.getElementById('mainTitle');
+  const sub = document.getElementById('mainSub');
+  const label = document.getElementById('cardLabel');
+  const btnText = document.getElementById('btnText');
+  const btnIcon = document.getElementById('btnIcon');
+
+  if (m === 'morning') {
+    title.innerHTML = 'Your Morning <em>Intention</em>';
+    sub.textContent = 'A practice to carry into your day';
+    label.textContent = "Today's Intention";
+    btnText.textContent = 'Receive Your Intention';
+    btnIcon.textContent = '✦';
+  } else {
+    title.innerHTML = 'Your Evening <em>Reflection</em>';
+    sub.textContent = 'A question to land with tonight';
+    label.textContent = "Tonight's Reflection";
+    btnText.textContent = 'Receive Your Reflection';
+    btnIcon.textContent = '🌙';
+  }
+
+  // Reset card to prompt
+  document.getElementById('cardText').textContent = m === 'morning'
+    ? 'Take a breath. Your intention is on its way.'
+    : 'The day is winding down. Your reflection is waiting.';
+  document.getElementById('cardPillar').textContent = '';
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+
+function moonLean() {
+  const synodic = 29.53058867;
+  const known = new Date(2000,0,6,18,14);
+  const now = new Date();
+  const days = (now - known) / 86400000;
+  const phase = ((days % synodic) + synodic) % synodic;
+  if (phase < 1.8) return "Beginner's Mind";
+  if (phase < 7.4) return "Trust";
+  if (phase < 9.2) return "Patience";
+  if (phase < 14.8) return "Reflective Practice";
+  if (phase < 16.6) return "The Return";
+  if (phase < 22.1) return "Letting Go";
+  if (phase < 23.9) return "Acceptance";
+  return "Letting Be";
+}
+
+function pickIndex(pool, lastIdx) {
+  const lean = moonLean();
+  const leanIdxs = pool.map((p,i) => p.pillar === lean ? i : -1).filter(i => i >= 0);
+  let candidates = (leanIdxs.length && Math.random() < 0.45) ? leanIdxs : pool.map((_,i) => i);
+  let idx;
+  do { idx = candidates[Math.floor(Math.random() * candidates.length)]; }
+  while (idx === lastIdx && candidates.length > 1);
+  return idx;
+}
+
+function updateLantern() {
+  let data = JSON.parse(localStorage.getItem('dr_completion') || 'null');
+  if (!data || data.date !== todayStr()) data = { date: todayStr(), morning: false, evening: false };
+  const flame = document.getElementById('flameBody');
+  const glow = document.getElementById('lanternGlow');
+  const label = document.getElementById('litLabel');
+  const bothDone = data.morning && data.evening;
+  flame.classList.toggle('dim', !bothDone);
+  glow.classList.toggle('dim', !bothDone);
+  label.textContent = bothDone ? 'Your lantern is lit today.' : '';
+  return data;
+}
+
+function markCompletion(m) {
+  const data = updateLantern();
+  data[m] = true;
+  localStorage.setItem('dr_completion', JSON.stringify(data));
+  updateLantern();
+}
+
+function updateRing() {
+  let activity = JSON.parse(localStorage.getItem('dr_activity') || '[]');
+  const today = new Date();
+  let count = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+    if (activity.includes(key)) count++;
+  }
+  const circumference = 314.16;
+  const offset = circumference - (circumference * (count / 7));
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+}
+
+function markActivity() {
+  let activity = JSON.parse(localStorage.getItem('dr_activity') || '[]');
+  const today = todayStr();
+  if (!activity.includes(today)) activity.push(today);
+  if (activity.length > 60) activity = activity.slice(activity.length - 60);
+  localStorage.setItem('dr_activity', JSON.stringify(activity));
+  updateRing();
+}
+
+function renderCollected() {
+  const list = JSON.parse(localStorage.getItem('dr_collected') || '[]');
+  document.getElementById('collectedCount').textContent = list.length;
+  const panel = document.getElementById('collectedPanel');
+  if (!list.length) {
+    panel.innerHTML = '<div class="collected-empty">Nothing kept yet. Tap "Keep this one" under any intention or reflection that lands.</div>';
+    return;
+  }
+  panel.innerHTML = list.slice().reverse().map((item, revIdx) => {
+    const i = list.length - 1 - revIdx;
+    return '<div class="collected-item"><span>' + item.text + '</span><button class="collected-remove" onclick="removeCollected(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+function keepCurrent() {
+  const text = document.getElementById('cardText').textContent;
+  const pillar = document.getElementById('cardPillar').textContent;
+  if (!pillar) return;
+  const list = JSON.parse(localStorage.getItem('dr_collected') || '[]');
+  if (list.some(item => item.text === text)) return;
+  list.push({ text, pillar, date: todayStr() });
+  localStorage.setItem('dr_collected', JSON.stringify(list));
+  const btn = document.getElementById('keepBtn');
+  btn.textContent = 'Kept';
+  btn.classList.add('kept');
+  renderCollected();
+}
+
+function removeCollected(i) {
+  const list = JSON.parse(localStorage.getItem('dr_collected') || '[]');
+  list.splice(i, 1);
+  localStorage.setItem('dr_collected', JSON.stringify(list));
+  renderCollected();
+}
+
+function toggleCollected() {
+  document.getElementById('collectedPanel').classList.toggle('open');
+}
+
+function generate() {
+  const pool = mode === 'morning' ? morningIntentions : eveningReflections;
+  const lastIdx = mode === 'morning' ? lastMorningIdx : lastEveningIdx;
+  const idx = pickIndex(pool, lastIdx);
+
+  if (mode === 'morning') lastMorningIdx = idx;
+  else lastEveningIdx = idx;
+
+  const item = pool[idx];
+  const cardText = document.getElementById('cardText');
+  const cardPillar = document.getElementById('cardPillar');
+
+  cardText.style.animation = 'none';
+  cardText.offsetHeight; // reflow
+  cardText.style.animation = 'fadeUp 0.6s ease forwards';
+  cardText.textContent = item.text;
+  cardPillar.textContent = item.pillar;
+
+  const keepBtn = document.getElementById('keepBtn');
+  keepBtn.textContent = 'Keep this one';
+  keepBtn.classList.remove('kept');
+
+  markCompletion(mode);
+  markActivity();
+}
+
+// Auto-detect time on load
+window.addEventListener('load', () => {
+  const detected = detectTime();
+  setMode(detected);
+  updateLantern();
+  updateRing();
+  renderCollected();
+});
+</script>
+</body>
+</html>
